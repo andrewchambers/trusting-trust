@@ -1,0 +1,15 @@
+[submodule "stage0/src/sbase"]
+	path = src/sbase
+	url = git://git.suckless.org/sbase
+[submodule "stage0/src/tinycc"]
+	path = src/tinycc
+	url = https://repo.or.cz/tinycc.git
+[submodule "stage0/src/oksh"]
+	path = src/oksh
+	url = https://github.com/ibara/oksh
+[submodule "stage0/src/musl"]
+	path = src/musl
+	url = git://git.musl-libc.org/musl
+[submodule "stage0/src/kernel-headers"]
+	path = src/kernel-headers
+	url = https://github.com/sabotage-linux/kernel-headers
