@@ -1,34 +1,6 @@
 # trusting-trust
 
-Mostly trustworthy paths to self hosted linux userspace.
-
-This project contains tidy and well documented build scripts that make few asumptions about
-your host operating system.
-
-# Build stages
-
-## Stage 0
-
-This stage builds initial versions of tools we will use to bootstrap the system.
-
-Depdendencies:
-
-- A linux operating system.
-- Functioning posix shell.
-- Functioning posix utilities.
-- A functioning C99 compiler.
-
-With redo:
-
-```
-redo ./x86_64-stage0.tar.gz
-```
-
-or with plain shell:
-
-```
-$ ./bin/do ./x86_64-stage0.tar.gz
-```
+An auditable and documented path to a self hosted linux userspace.
 
 ## Links
 
