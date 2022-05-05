@@ -1,26 +1,64 @@
-set -x
+set -eux
+set -o pipefail
 exec >&2
 
 case "$1" in
+
+	all.sha256sums)
+		mkdir -p bin
+		redo-ifchange bin/mes-m2
+	;;
+	
+	mes-sources.list)
+		# gather sources once initially.
+		find src -type f \
+		| grep -v \
+		  -e '.git' \
+		  -e '^src/test' \
+		  -e '^src/lib' \
+		  -e '^src/include' > "$3" \
+		> "$3"
+	;;
+
+	nyacc-sources.list)
+		find nyacc -type f \
+		| grep \
+		  -e '.git' \
+		> "$3"
+	;;
+
+	mes-includes.list)
+		find src -type f \
+		| grep \
+		  -e '^src/include' \
+		> "$3"
+	;;
+
 	bin/mes-m2)
-		redo-ifchange $(find src -type f | grep -v -e '.git' -e ' ')
-		redo-ifchange ../stage0-posix/all
+		redo-ifchange mes-sources.list
+		redo-ifchange $(cat mes-sources.list)
+		redo-ifchange ../stage0-posix/all.sha256sums
 		cd src
 		env -i \
 			PATH="$PWD/../../stage0-posix/bin" \
 			ARCH=x86 \
 			kaem --strict --verbose --file kaem.x86
 		cd ..
-		mkdir -p bin
 		cp src/bin/mes-m2 "$3"
 		chmod +x "$3"
 	;;
 
-	*.s)
-		redo-ifchange $(find src -type f | grep -v -e '.git' -e ' ')
-		redo-ifchange ../stage0-posix/all bin/mes-m2
-		cfile="$(realpath "${1%.s}.c")"
+	*.S)
+		cfile="$(realpath "${1%.S}.c")"
 		out="$(realpath $3)"
+
+		redo-ifchange mes-includes.list nyacc-sources.list
+		redo-ifchange \
+			$(cat mes-includes.list nyacc-sources.list) \
+			../stage0-posix/all.sha256sums \
+			./bin/mes-m2 \
+			"$cfile"
+
 		cd src
 		env -i \
 			MES_ARENA=20000000 \
@@ -31,7 +69,7 @@ case "$1" in
 			-L ../nyacc/module \
 			-e main \
 			scripts/mescc.scm \
-			-I include -v -S "$cfile" -o "$out"
+			-I include -S "$cfile" -o "$out"
 	;;
 
 	lib/libc+tcc.a)
@@ -95,7 +133,7 @@ case "$1" in
 		redo-ifchange $(
 			for cfile in $src
 			do
-				echo "src/lib/${cfile%.c}.s"
+				echo "src/lib/${cfile%.c}.S"
 			done
 		)
 		exit 1
