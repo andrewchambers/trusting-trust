@@ -5,8 +5,8 @@ exec >&2
 case "$1" in
 
 	all.sha256sums)
-		mkdir -p bin
-		redo-ifchange bin/mes-m2
+		mkdir -p ./bin
+		redo-ifchange ./bin/mes-m2
 	;;
 	
 	mes-sources.list)
@@ -35,8 +35,8 @@ case "$1" in
 	;;
 
 	bin/mes-m2)
-		redo-ifchange mes-sources.list
-		redo-ifchange $(cat mes-sources.list)
+		redo-ifchange ./mes-sources.list
+		redo-ifchange $(cat ./mes-sources.list)
 		redo-ifchange ../stage0-posix/all.sha256sums
 		cd src
 		env -i \
@@ -44,7 +44,7 @@ case "$1" in
 			ARCH=x86 \
 			kaem --strict --verbose --file kaem.x86
 		cd ..
-		cp src/bin/mes-m2 "$3"
+		cp ./src/bin/mes-m2 "$3"
 		chmod +x "$3"
 	;;
 
@@ -52,7 +52,8 @@ case "$1" in
 		cfile="$(realpath "${1%.S}.c")"
 		out="$(realpath $3)"
 
-		redo-ifchange mes-includes.list nyacc-sources.list
+		redo-ifchange mes-includes.list \
+			nyacc-sources.list
 		redo-ifchange \
 			$(cat mes-includes.list nyacc-sources.list) \
 			../stage0-posix/all.sha256sums \
@@ -68,8 +69,8 @@ case "$1" in
 			../bin/mes-m2 \
 			-L ../nyacc/module \
 			-e main \
-			scripts/mescc.scm \
-			-I include -S "$cfile" -o "$out"
+			./scripts/mescc.scm \
+			-I ./include -S "$cfile" -o "$out"
 	;;
 
 	lib/libc+tcc.a)
@@ -133,7 +134,7 @@ case "$1" in
 		redo-ifchange $(
 			for cfile in $src
 			do
-				echo "src/lib/${cfile%.c}.S"
+				echo "./src/lib/${cfile%.c}.S"
 			done
 		)
 		exit 1
