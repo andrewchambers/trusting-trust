@@ -1,6 +1,6 @@
 #!/bin/sh
 # dependency-hash (used by redo) @DEPHASH@
-set -eux
+set -eu
 
 DIR=$(dirname "$(realpath "$0")")
 
