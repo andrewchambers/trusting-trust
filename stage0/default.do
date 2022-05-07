@@ -3,6 +3,10 @@ set -o pipefail
 exec >&2
 
 case "$1" in
+	all)
+		redo-ifchange all.done
+	;;
+
 	all.done)
 		redo-ifchange ./sources.list
 		redo-ifchange $(cat ./sources.list)
@@ -16,11 +20,13 @@ case "$1" in
 		done
 		sha256sum ./bin/* > "$3"
 	;;
+
 	sources.list)
 		# gather sources once initially.
 		find src -type f \
 		| grep -v -e '.git' -e ' ' > "$3"
 	;;
+
 	*)
 		echo "don't know how to build $1"
 		exit 1

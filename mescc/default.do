@@ -3,11 +3,14 @@ set -o pipefail
 exec >&2
 
 case "$1" in
+	all)
+		redo-ifchange all.done
+	;;
 
 	all.done)
 		mkdir -p ./bin
-		redo-ifchange ./bin/mes-m2
-		sha256sums bin/* > "$3"
+		redo-ifchange ./bin/mescc
+		sha256sum ./bin/* > "$3"
 	;;
 	
 	mes-m2-sources.list)
@@ -25,13 +28,6 @@ case "$1" in
 		find nyacc -type f \
 		| grep \
 		  -e '.git' \
-		> "$3"
-	;;
-
-	mes-m2-includes.list)
-		find mes-m2 -type f \
-		| grep \
-		  -e '^mes-m2/include' \
 		> "$3"
 	;;
 
@@ -62,32 +58,6 @@ case "$1" in
 		# include the hash.
 		sed "s/@DEPHASH@/$dephash/g" ./bin/mescc.in > "$3"
 		chmod +x "$3"
-	;;
-
-	*.o)
-		cfile="$(realpath "${1%.o}.c")"
-		out="$(realpath $3)"
-
-		redo-ifchange \
-			./mes-includes.list \
-			./nyacc-sources.list
-		redo-ifchange \
-			$(cat mes-includes.list nyacc-sources.list) \
-			../stage0-posix/all.sha256sums \
-			./bin/mes-m2 \
-			"$cfile"
-
-		cd mes-m2
-		env -i \
-			MES_ARENA=20000000 \
-			MES_MAX_ARENA=20000000 \
-			MES_STACK=6000000 \
-			PATH="$PWD/../../stage0-posix/bin" \
-			../bin/mes-m2 \
-			-L ../nyacc/module \
-			-e main \
-			./scripts/mescc.scm \
-			-I ./include -c "$cfile" -o "$out"
 	;;
 
 	*)
