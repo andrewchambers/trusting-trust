@@ -8,11 +8,11 @@ exec env -i \
 	MES_ARENA=20000000 \
 	MES_MAX_ARENA=20000000 \
 	MES_STACK=6000000 \
-	MES_PREFIX="$DIR/../mes-m2" \
-	PATH="$DIR/../../stage0-posix/bin" \
+	MES_PREFIX="$DIR/.././mes-m2" \
+	GUILE_LOAD_PATH="$DIR/../mes-m2/module:$DIR/../nyacc/module" \
+	PATH="$DIR/../../stage0/bin" \
 	"$DIR/mes-m2" \
-	-L "$DIR/../mes-m2/mes/module" \
-	-L "$DIR/../nyacc/module" \
 	-e main \
 	"$DIR/../mes-m2/scripts/mescc.scm" \
 	"$@"
+
