@@ -7,3 +7,6 @@
 [submodule "tcc/mes-m2"]
 	path = mescc/mes-m2
 	url = https://github.com/oriansj/mes-m2
+[submodule "tcc/tcc"]
+	path = tcc/tcc
+	url = https://gitlab.com/janneke/tinycc

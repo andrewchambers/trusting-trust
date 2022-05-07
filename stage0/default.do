@@ -13,7 +13,6 @@ case "$1" in
 		cd src
 		env -i /bin/sh -eu ./kaem.x86
 		cd ..
-		mkdir -p bin
 		for f in $(awk '{print $2}' ./src/x86.answers)
 		do
 			mv "./src/$f" ./bin
