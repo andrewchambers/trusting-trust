@@ -1,27 +1,9 @@
-[submodule "stage0/src/sbase"]
-	path = src/sbase
-	url = git://git.suckless.org/sbase
-[submodule "stage0/src/tinycc"]
-	path = src/tinycc
-	url = https://repo.or.cz/tinycc.git
-[submodule "stage0/src/oksh"]
-	path = src/oksh
-	url = https://github.com/ibara/oksh
-[submodule "stage0/src/musl"]
-	path = src/musl
-	url = git://git.musl-libc.org/musl
-[submodule "stage0/src/kernel-headers"]
-	path = src/kernel-headers
-	url = https://github.com/sabotage-linux/kernel-headers
 [submodule "stage0-posix"]
-	path = stage0-posix/src
+	path = stage0/src
 	url = https://github.com/oriansj/stage0-posix
-[submodule "mes-m2/mes-m2"]
-	path = mes-m2/mes-m2
-	url = https://github.com/oriansj/mes-m2
-[submodule "mes-m2/nyacc"]
-	path = mes-m2/nyacc
+[submodule "nyacc"]
+	path = tcc/nyacc
 	url = https://git.savannah.nongnu.org/git/nyacc.git
-[submodule "mes-m2/src"]
-	path = mes-m2/src
+[submodule "tcc/mes-m2"]
+	path = tcc/mes-m2
 	url = https://github.com/oriansj/mes-m2

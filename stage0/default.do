@@ -3,7 +3,7 @@ set -o pipefail
 exec >&2
 
 case "$1" in
-	all.sha256sums)
+	all.done)
 		redo-ifchange ./sources.list
 		redo-ifchange $(cat ./sources.list)
 		cd src
@@ -25,5 +25,4 @@ case "$1" in
 		echo "don't know how to build $1"
 		exit 1
 	;;
-
 esac

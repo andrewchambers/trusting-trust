@@ -1,0 +1,18 @@
+#!/bin/sh
+# dependency-hash (used by redo) @DEPHASH@
+set -eux
+
+DIR=$(dirname "$(realpath "$0")")
+
+exec env -i \
+	MES_ARENA=20000000 \
+	MES_MAX_ARENA=20000000 \
+	MES_STACK=6000000 \
+	MES_PREFIX="$DIR/../mes-m2" \
+	PATH="$DIR/../../stage0-posix/bin" \
+	"$DIR/mes-m2" \
+	-L "$DIR/../mes-m2/mes/module" \
+	-L "$DIR/../nyacc/module" \
+	-e main \
+	"$DIR/../mes-m2/scripts/mescc.scm" \
+	"$@"
