@@ -52,7 +52,7 @@ case "$1" in
 			-D TCC_VERSION=\"0.9.26\" \
 			-D ONE_SOURCE=1 \
 			-o "$3" \
-			./tcc/tcc.c 2>&1 | head -c 1000000 | tee tcc0.log
+			./tcc/tcc.c
 	;;
 
 	lib/libc.a)
