@@ -11,7 +11,7 @@ case "$1" in
 		mkdir -p ./bin ./lib
 		files="
 			./bin/mescc
-			mes-m2/lib/linux/x86-mes-mescc/crt1.o
+			mes-m2/lib/x86-mes/crt1.o
 			mes-m2/lib/x86-mes/libmescc.a
 			mes-m2/lib/x86-mes/libc.a
 		"
@@ -22,10 +22,12 @@ case "$1" in
 	mes-m2-sources.list)
 		find mes-m2 -type f \
 		| grep -v \
-		  -e '.git' \
-		  -e '^mes-m2/test' \
-		  -e '^mes-m2/lib' \
-		  -e '^mes-m2/include' \
+			-e '.git' \
+			-e '\.redo' \
+			-e '^mes-m2/test' \
+			-e '^mes-m2/lib' \
+			-e '^mes-m2/include' \
+			-e '\.a$'
 		> "$3"
 	;;
 
@@ -40,6 +42,7 @@ case "$1" in
 		find nyacc -type f \
 		| grep \
 		  -e '.git' \
+		  -e '.redo' \
 		> "$3"
 	;;
 
@@ -76,6 +79,11 @@ case "$1" in
 		obj="${1%.a}".o
 		redo-ifchange "$obj"
 		cp "$obj" "$3"
+	;;
+	
+	mes-m2/lib/x86-mes/crt1.o)
+		redo-ifchange mes-m2/lib/linux/x86-mes-mescc/crt1.o
+		cp mes-m2/lib/linux/x86-mes-mescc/crt1.o "$3"
 	;;
 
 	mes-m2/lib/x86-mes/libmescc.s)
@@ -232,12 +240,11 @@ case "$1" in
 
 	*.s)
 		cfile="${1%.s}.c"
-		#redo-ifchange mes-m2-includes.list
-		#redo-ifchange \
-			# XXX
-			#../mescc/bin/mescc \
-			#$(cat mes-m2-includes.list) \
-			#"$cfile"
+		redo-ifchange mes-m2-includes.list
+		redo-ifchange \
+			../mescc/bin/mescc \
+			$(cat mes-m2-includes.list) \
+			"$cfile"
 		../mescc/bin/mescc \
 			-I "../mescc/mes-m2/lib/include" \
 			-S \

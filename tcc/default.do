@@ -8,16 +8,16 @@ case "$1" in
 	;;
 
 	all.done)
-		mkdir -p ./bin
-		redo-ifchange ./bin/tcc
-		sha256sum ./bin/* > "$3"
+		redo-ifchange ./bin/tcc ./lib/libc.a
+		sha256sum ./bin/* ./lib/* > "$3"
 	;;
 	
 	tcc-sources.list)
 		# gather sources once initially.
 		find tcc -type f \
 		| grep -v \
-		  -e '.git' \
+		  -e '\.git' \
+		  -e '\.redo' \
 		> "$3"
 	;;
 
@@ -29,7 +29,7 @@ case "$1" in
 		redo-ifchange \
 			tcc-sources.list \
 			./tcc/config.h \
-			../mescc/bin/mescc
+			../mescc/all.done
 		redo-ifchange $(cat tcc-sources.list)
 
 		../mescc/bin/mescc \
@@ -52,10 +52,10 @@ case "$1" in
 			-D TCC_VERSION=\"0.9.26\" \
 			-D ONE_SOURCE=1 \
 			-o "$3" \
-			./tcc/tcc.c
+			./tcc/tcc.c 2>&1 | head -c 1000000 | tee tcc0.log
 	;;
 
-	libc.a)
+	lib/libc.a)
 		cfiles="
 			./tcc/lib/libtcc1.c
 			../mescc/mes-m2/lib/linux/x86-mes-gcc/crti.c
@@ -199,7 +199,7 @@ case "$1" in
 			../mescc/mes-m2/lib/linux/x86-mes-gcc/syscall.c
 			../mescc/mes-m2/lib/linux/x86-mes-gcc/syscall-internal.c
 		"
-		redo-ifchange $cfiles
+		redo-ifchange ./tcc0 $cfiles
 		rm -rf ./libc-obj
 		mkdir ./libc-obj
 		for cfile in $cfiles
@@ -219,7 +219,7 @@ case "$1" in
 		rm -rf ./libc-obj
 	;;
 
-	tcc)
+	bin/tcc)
 		redo-ifchange \
 			tcc-sources.list \
 			./tcc/config.h \
@@ -228,36 +228,33 @@ case "$1" in
 
 		./tcc0 \
 			-v \
-				-nostdinc \
-				-nostdlib \
-				-I "../mescc/mes-m2/include" \
-				-D BOOTSTRAP=1 \
-				-D HAVE_FLOAT=1 \
-				-D HAVE_BITFIELD=1 \
-			    -D HAVE_LONG_LONG=1 \
-			    -D HAVE_SETJMP=1 \
-				-D TCC_TARGET_I386=1 \
-				-D inline= \
-				-D CONFIG_TCCDIR=\"/tcc\" \
-				-D CONFIG_SYSROOT=\"/\" \
-				-D CONFIG_TCC_CRTPREFIX=\"/\" \
-				-D CONFIG_TCC_ELFINTERP=\"/\" \
-				-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
-				-D TCC_LIBGCC=\"\" \
-				-D CONFIG_TCC_LIBTCC1_MES=0 \
-				-D CONFIG_TCCBOOT=1 \
-				-D CONFIG_TCC_STATIC=1 \
-				-D CONFIG_USE_LIBGCC=1 \
-				-D TCC_MES_LIBC=1 \
-				-D TCC_VERSION=\"0.9.26\" \
-				-D ONE_SOURCE=1 \
-				-o "$3" \
-				./tcc/tcc.c \
-				./libc.a
+			-nostdinc \
+			-nostdlib \
+			-I "../mescc/mes-m2/include" \
+			-D BOOTSTRAP=1 \
+			-D HAVE_FLOAT=1 \
+			-D HAVE_BITFIELD=1 \
+			-D HAVE_LONG_LONG=1 \
+			-D HAVE_SETJMP=1 \
+			-D TCC_TARGET_I386=1 \
+			-D inline= \
+			-D CONFIG_TCCDIR=\"/tcc\" \
+			-D CONFIG_SYSROOT=\"/\" \
+			-D CONFIG_TCC_CRTPREFIX=\"/\" \
+			-D CONFIG_TCC_ELFINTERP=\"/\" \
+			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
+			-D TCC_LIBGCC=\"\" \
+			-D CONFIG_TCC_LIBTCC1_MES=0 \
+			-D CONFIG_TCCBOOT=1 \
+			-D CONFIG_TCC_STATIC=1 \
+			-D CONFIG_USE_LIBGCC=1 \
+			-D TCC_MES_LIBC=1 \
+			-D TCC_VERSION=\"0.9.26\" \
+			-D ONE_SOURCE=1 \
+			-o "$3" \
+			./tcc/tcc.c \
+			./lib/libc.a
 	;;
-
-
-
 
 	*)
 		echo "don't know how to build $1"

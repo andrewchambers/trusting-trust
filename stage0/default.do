@@ -23,7 +23,11 @@ case "$1" in
 	sources.list)
 		# gather sources once initially.
 		find src -type f \
-		| grep -v -e '.git' -e ' ' > "$3"
+		| grep -v \
+			-e '\.git' \
+			-e '\.redo' \
+			-e ' ' \
+		> "$3"
 	;;
 
 	*)
