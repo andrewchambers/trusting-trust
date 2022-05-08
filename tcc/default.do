@@ -17,7 +17,6 @@ case "$1" in
 	;;
 	
 	tcc-0.9.26-sources.list)
-		# gather sources once initially.
 		find tcc-0.9.26 -type f \
 		| grep -v \
 		  -e '\.git' \
@@ -26,8 +25,7 @@ case "$1" in
 	;;
 
 	tcc-sources.list)
-		# gather sources once initially.
-		find tcc-type f \
+		find tcc -type f \
 		| grep -v \
 		  -e '\.git' \
 		  -e '\.redo' \
@@ -220,7 +218,7 @@ case "$1" in
 		do
 			ofile="./libc-obj/$(basename "$cfile" ".c").o"
 			file $ofile
-			./bin/tcc-0.9.26 \
+			./bin/tcc-0.9.26-mescc \
 				-nostdinc \
 				-D TCC_TARGET_I386=1 \
 				-I ../mescc/mes-m2/include \
