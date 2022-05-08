@@ -8,29 +8,43 @@ case "$1" in
 	;;
 
 	all.done)
-		redo-ifchange ./bin/tcc ./lib/libc.a
+		redo-ifchange \
+			./bin/tcc-0.9.26-mescc \
+			./bin/tcc-0.9.26 \
+			./bin/tcc \
+			./lib/libc.a
 		sha256sum ./bin/* ./lib/* > "$3"
 	;;
 	
-	tcc-sources.list)
+	tcc-0.9.26-sources.list)
 		# gather sources once initially.
-		find tcc -type f \
+		find tcc-0.9.26 -type f \
 		| grep -v \
 		  -e '\.git' \
 		  -e '\.redo' \
 		> "$3"
 	;;
 
-	tcc/config.h)
+	tcc-sources.list)
+		# gather sources once initially.
+		find tcc-type f \
+		| grep -v \
+		  -e '\.git' \
+		  -e '\.redo' \
+		> "$3"
+	;;
+
+	tcc*/config.h)
 		touch "$3"
 	;;
 
-	tcc0)
+	bin/tcc-0.9.26-mescc)
 		redo-ifchange \
-			tcc-sources.list \
-			./tcc/config.h \
-			../mescc/all.done
-		redo-ifchange $(cat tcc-sources.list)
+			../mescc/all.done \
+			./tcc-0.9.26-sources.list \
+			./tcc-0.9.26/config.h
+
+		redo-ifchange $(cat tcc-0.9.26-sources.list)
 
 		../mescc/bin/mescc \
 			-v \
@@ -52,7 +66,7 @@ case "$1" in
 			-D TCC_VERSION=\"0.9.26\" \
 			-D ONE_SOURCE=1 \
 			-o "$3" \
-			./tcc/tcc.c 2>&1 | head -c 1000000 | tee tcc0.log
+			./tcc-0.9.26/tcc.c
 	;;
 
 	lib/libc.a)
@@ -199,14 +213,14 @@ case "$1" in
 			../mescc/mes-m2/lib/linux/x86-mes-gcc/syscall.c
 			../mescc/mes-m2/lib/linux/x86-mes-gcc/syscall-internal.c
 		"
-		redo-ifchange ./tcc0 $cfiles
+		redo-ifchange ./bin/tcc-0.9.26-mescc $cfiles
 		rm -rf ./libc-obj
 		mkdir ./libc-obj
 		for cfile in $cfiles
 		do
 			ofile="./libc-obj/$(basename "$cfile" ".c").o"
 			file $ofile
-			./tcc0 \
+			./bin/tcc-0.9.26 \
 				-nostdinc \
 				-D TCC_TARGET_I386=1 \
 				-I ../mescc/mes-m2/include \
@@ -215,18 +229,18 @@ case "$1" in
 				-o "$ofile" \
 				"$cfile"
 		done
-		./tcc0 -ar -cr "$3" libc-obj/*
+		./bin/tcc-0.9.26-mescc -ar -cr "$3" libc-obj/*
 		rm -rf ./libc-obj
 	;;
 
-	bin/tcc)
+	bin/tcc-0.9.26)
 		redo-ifchange \
-			tcc-sources.list \
-			./tcc/config.h \
-			./tcc0
-		redo-ifchange $(cat tcc-sources.list)
+			tcc-0.9.26-sources.list \
+			./tcc-0.9.26/config.h \
+			./bin/tcc-0.9.26-mescc
+		redo-ifchange $(cat tcc-0.9.26-sources.list)
 
-		./tcc0 \
+		./bin/tcc-0.9.26-mescc \
 			-v \
 			-nostdinc \
 			-nostdlib \
@@ -252,9 +266,48 @@ case "$1" in
 			-D TCC_VERSION=\"0.9.26\" \
 			-D ONE_SOURCE=1 \
 			-o "$3" \
+			./tcc-0.9.26/tcc.c \
+			./lib/libc.a
+	;;
+
+	bin/tcc)
+		redo-ifchange \
+			tcc-sources.list \
+			./tcc/config.h \
+			./bin/tcc-0.9.26
+		redo-ifchange $(cat tcc-sources.list)
+
+		./bin/tcc-0.9.26 \
+			-v \
+			-nostdinc \
+			-nostdlib \
+			-I "../mescc/mes-m2/include" \
+			-D BOOTSTRAP=1 \
+			-D HAVE_FLOAT=1 \
+			-D HAVE_BITFIELD=1 \
+			-D HAVE_LONG_LONG=1 \
+			-D HAVE_SETJMP=1 \
+			-D TCC_TARGET_I386=1 \
+			-D inline= \
+			-D CONFIG_TCCDIR=\"/tcc\" \
+			-D CONFIG_SYSROOT=\"/\" \
+			-D CONFIG_TCC_CRTPREFIX=\"/\" \
+			-D CONFIG_TCC_ELFINTERP=\"/\" \
+			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
+			-D TCC_LIBGCC=\"\" \
+			-D CONFIG_TCC_LIBTCC1_MES=0 \
+			-D CONFIG_TCCBOOT=1 \
+			-D CONFIG_TCC_STATIC=1 \
+			-D CONFIG_USE_LIBGCC=1 \
+			-D TCC_MES_LIBC=1 \
+			-D TCC_VERSION=\"\" \
+			-D ONE_SOURCE=1 \
+			-o "$3" \
 			./tcc/tcc.c \
 			./lib/libc.a
 	;;
+
+
 
 	*)
 		echo "don't know how to build $1"
