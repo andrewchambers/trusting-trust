@@ -21,12 +21,12 @@ case "$1" in
 	;;
 
 	sources.list)
-		find stage0-posix -type f \
-		| grep -v \
-			-e '\.git' \
-			-e '\.redo' \
-			-e ' ' \
-		> "$3"
+		for dir in ./ $(find stage0-posix -name .git | sed 's,.git$,,g')
+		do
+			cd $dir
+			git ls-tree --name-only -r HEAD . | awk -v dir="$dir" '{print dir $0}'
+			cd $OLDPWD
+		done | grep -v -e ' ' > "$3"
 	;;
 
 	*)

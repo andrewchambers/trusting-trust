@@ -21,45 +21,52 @@ case "$1" in
 	;;
 	
 	mes-sources.list)
-		find mes -type f \
-		| grep -v \
-			-e '.git' \
-			-e '\.redo' \
-			-e '^mes/test' \
-			-e '^mes/lib' \
-			-e '^mes/include' \
-			-e '\.a$'
-		> "$3"
+		(
+			cd mes
+			git ls-tree -r --name-only HEAD . \
+				| awk  '{print "mes/" $0}' \
+				| grep -v \
+					-e '^mes/test' \
+					-e '^mes/lib' \
+					-e '^mes/include'
+		) > "$3"
 	;;
 
 	mes-includes.list)
-		find mes -type f \
-		| grep \
-		  -e 'mes/include' \
-		> "$3"
+		(
+			cd mes
+			git ls-tree -r --name-only HEAD . \
+				| awk  '{print "mes/" $0}' \
+				| grep -e '^mes/include'
+		) > "$3"
 	;;
 
 	mes-libc-sources.list)
-		find mes/lib -type f -name '*.[csS]' \
-		| grep -v \
-		  -e 'mes-mescc/' \
-		  -e 'tests/' \
-		  -e 'lib/freebsd/' \
-		  -e 'lib/hurd/' \
-		  -e 'lib/mach/' \
-		  -e 'lib/gnu/' \
-		  -e 'lib/arm\-' \
-		  -e 'lib/m2/time.c$' \
-		  -e '\-gcc' \
-		> "$3"
+		(
+			cd mes
+			git ls-tree -r --name-only HEAD . \
+				| awk  '{print "mes/" $0}' \
+				| grep '\.[cS]$' \
+				| grep '^mes/lib' \
+				| grep -v \
+				  -e 'mes-mescc/' \
+				  -e 'tests/' \
+				  -e 'lib/freebsd/' \
+				  -e 'lib/hurd/' \
+				  -e 'lib/mach/' \
+				  -e 'lib/gnu/' \
+				  -e 'lib/m2/time.c$' \
+				  -e '/arm\-' \
+				  -e '\-gcc'
+		) > "$3"
 	;;
 
 	nyacc-sources.list)
-		find nyacc -type f \
-		| grep \
-		  -e '.git' \
-		  -e '.redo' \
-		> "$3"
+		(
+			cd nyacc
+			git ls-tree -r --name-only HEAD . \
+				| awk  '{print "nyacc/" $0}'
+		) > "$3"
 	;;
 
 	bin/mes)
