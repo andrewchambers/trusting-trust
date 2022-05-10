@@ -1,9 +1,6 @@
 [submodule "mescc/nyacc"]
 	path = mescc/nyacc
 	url = https://git.savannah.nongnu.org/git/nyacc.git
-[submodule "mescc/mes-m2"]
-	path = mescc/mes-m2
-	url = https://github.com/oriansj/mes-m2
 [submodule "tcc-0.9.26"]
 	path = tcc/tcc-0.9.26
 	url = https://gitlab.com/janneke/tinycc
@@ -13,3 +10,6 @@
 [submodule "stage0/stage0-posix"]
 	path = stage0/stage0-posix
 	url = https://github.com/oriansj/stage0-posix
+[submodule "mescc/mes"]
+	path = mescc/mes
+	url = git://git.savannah.gnu.org/mes.git

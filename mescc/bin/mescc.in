@@ -1,18 +1,20 @@
 #!/bin/sh
+# A wrapper script around mescc setting up the build env.
 # dependency-hash (used by redo) @DEPHASH@
 set -eu
 
 DIR=$(dirname "$(realpath "$0")")
 
+set -x
 exec env -i \
 	MES_ARENA=20000000 \
 	MES_MAX_ARENA=20000000 \
 	MES_STACK=6000000 \
-	MES_PREFIX="$DIR/.././mes-m2" \
-	GUILE_LOAD_PATH="$DIR/../mes-m2/module:$DIR/../nyacc/module" \
+	MES_PREFIX="$DIR/.././mes" \
+	GUILE_LOAD_PATH="$DIR/../mes/module:$DIR/../nyacc/module" \
 	PATH="$DIR/../../stage0/bin" \
-	"$DIR/mes-m2" \
-	-e main \
-	"$DIR/../mes-m2/scripts/mescc.scm" \
+	"$DIR/mes" \
+	-e '(mes-use-module (mescc)) (mescc:main (command-line))' \
+	"$DIR/../mes/module/mescc.scm" \
 	"$@"
 

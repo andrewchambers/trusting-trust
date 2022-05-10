@@ -15,7 +15,7 @@ case "$1" in
 		cd ..
 		for f in $(awk '{print $2}' ./stage0-posix/x86.answers)
 		do
-			ln "./stage0-posix/$f" ./bin
+			cp "./stage0-posix/$f" ./bin
 		done
 		sha256sum ./bin/* > "$3"
 	;;
