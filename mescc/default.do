@@ -11,9 +11,10 @@ case "$1" in
 		mkdir -p ./bin ./lib
 		files="
 			./bin/mescc
-			mes/lib/x86-mes/crt1.o
-			mes/lib/x86-mes/libmescc.a
-			mes/lib/x86-mes/libc.a
+			./bin/mes
+			./mes/lib/x86-mes/crt1.o
+			./mes/lib/x86-mes/libmescc.a
+			./mes/lib/x86-mes/libc.a
 		"
 		redo-ifchange $files
 		sha256sum $files > "$3"
@@ -43,10 +44,13 @@ case "$1" in
 		| grep -v \
 		  -e 'mes-mescc/' \
 		  -e 'tests/' \
-		  -e 'freebsd' \
-		  -e 'hurd' \
-		  -e 'arm' \
-		  -e 'gcc' \
+		  -e 'lib/freebsd/' \
+		  -e 'lib/hurd/' \
+		  -e 'lib/mach/' \
+		  -e 'lib/gnu/' \
+		  -e 'lib/arm\-' \
+		  -e 'lib/m2/time.c$' \
+		  -e '\-gcc' \
 		> "$3"
 	;;
 
@@ -68,22 +72,46 @@ case "$1" in
 			ARCH=x86 \
 			kaem --strict --verbose --file kaem.run
 		cd ..
+		chmod +x ./mes/bin/mes
 		cp ./mes/bin/mes "$3"
-		chmod +x "$3"
+	;;
+
+	bin/mescc.scm)
+		redo-ifchange ./mes/scripts/mescc.scm.in
+		sed ./mes/scripts/mescc.scm.in  \
+			-e "s,@BASH@,/bin/sh,g" \
+			-e "s,@prefix@,$PWD/mes,g" \
+			-e "s,@guile_site_dir@,$PWD/mes/module:$PWD/nyacc/module,g" \
+			-e "s,@bindir@,$PWD/mes/mes/module,g" \
+			-e "s,@includedir@,$PWD/mes/include,g" \
+			-e "s,@libdir@,$PWD/mes/lib,g" \
+			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
+			-e "s,@mes_cpu@,x86,g" \
+			> "$3"
 	;;
 
 	bin/mescc)
 		# Technically we aren't building mescc, but it's useful
 		# to be able to depend on bin/mescc and its sources.
 		redo-ifchange \
-			./bin/mescc.in \
+			../stage0/all.done \
 			./bin/mes \
+			./bin/mescc.scm \
+			./mes/scripts/mescc.in \
 			./nyacc-sources.list
-		dephash=$(
-			cat ./bin/mes $(cat ./nyacc-sources.list) | sha256sum | awk '{print $1}'
-		)
 		# include the hash.
-		sed "s/@DEPHASH@/$dephash/g" ./bin/mescc.in > "$3"
+
+		sed ./mes/scripts/mescc.in  \
+			-e "s,@BASH@,/bin/sh,g" \
+			-e "s,@prefix@,$PWD/mes,g" \
+			-e "s,@guile_site_dir@,$PWD/mes/module:$PWD/nyacc/module,g" \
+			-e "s,@bindir@,$PWD/mes/mes/module,g" \
+			-e "s,@includedir@,$PWD/mes/include,g" \
+			-e "s,@libdir@,$PWD/mes/lib,g" \
+			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
+			> "$3"
+		# include something so redo stamps change.
+		echo "# generated at $(date)" >> "$3"
 		chmod +x "$3"
 	;;
 
@@ -126,7 +154,9 @@ case "$1" in
 			../mescc/bin/mescc \
 			$(cat mes-includes.list) \
 			"$cfile"
-		../mescc/bin/mescc \
+		
+		env -i PATH="$PWD/../stage0/bin:$PATH" \
+			../mescc/bin/mescc \
 			-I "../mescc/mes/lib/include" \
 			-S \
 			-o "$3" \
@@ -138,7 +168,8 @@ case "$1" in
 		redo-ifchange \
 			../mescc/bin/mescc \
 			"$sfile"
-		../mescc/bin/mescc \
+		env -i PATH="$PWD/../stage0/bin:$PATH" \
+			../mescc/bin/mescc \
 			-c \
 			-o "$3" \
 			"$sfile"
