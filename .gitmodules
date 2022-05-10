@@ -1,10 +1,7 @@
-[submodule "stage0-posix"]
-	path = stage0/src
-	url = https://github.com/oriansj/stage0-posix
-[submodule "nyacc"]
+[submodule "mescc/nyacc"]
 	path = mescc/nyacc
 	url = https://git.savannah.nongnu.org/git/nyacc.git
-[submodule "mes-m2"]
+[submodule "mescc/mes-m2"]
 	path = mescc/mes-m2
 	url = https://github.com/oriansj/mes-m2
 [submodule "tcc-0.9.26"]
@@ -13,3 +10,6 @@
 [submodule "tcc/tcc"]
 	path = tcc/tcc
 	url = https://repo.or.cz/tinycc.git
+[submodule "stage0/stage0-posix"]
+	path = stage0/stage0-posix
+	url = https://github.com/oriansj/stage0-posix

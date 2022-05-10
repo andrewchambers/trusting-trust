@@ -10,19 +10,18 @@ case "$1" in
 	all.done)
 		redo-ifchange ./sources.list
 		redo-ifchange $(cat ./sources.list)
-		cd src
+		cd stage0-posix
 		env -i /bin/sh -eu ./kaem.x86
 		cd ..
-		for f in $(awk '{print $2}' ./src/x86.answers)
+		for f in $(awk '{print $2}' ./stage0-posix/x86.answers)
 		do
-			mv "./src/$f" ./bin
+			ln "./stage0-posix/$f" ./bin
 		done
 		sha256sum ./bin/* > "$3"
 	;;
 
 	sources.list)
-		# gather sources once initially.
-		find src -type f \
+		find stage0-posix -type f \
 		| grep -v \
 			-e '\.git' \
 			-e '\.redo' \
