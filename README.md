@@ -42,8 +42,7 @@ If you don't have redo installed:
 $ ./do
 ```
 
-Because the whole process is a redo build system, you can also build individual targets
-by reading each stages `.do` file.
+Because the whole process is a redo build system, you can also build individual targets (found by reading each stages `.do` file).
 
 # Stages
 
