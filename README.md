@@ -69,7 +69,7 @@ for its own use.
 Tiny C compiler is useful because it implements an assembler and linker that 
 is more compatible with 'proper' compiler tools.
 
-## bootstrap Cproc, QBE and diet-musl
+## cproc, qbe and diet-musl
 
 To be done:
 
