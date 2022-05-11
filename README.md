@@ -52,13 +52,12 @@ by reading each stages `.do` file.
 This stage builds https://github.com/oriansj/stage0-posix starting from a
 tiny hand written auditable elf file. 
 
-This stage contains a macro assembler, a tiny C compiler implemetned in assembly, and other tools used by the mes C compiler in the next stage.
+This stage contains a macro assembler, a small Cish compiler implemented in assembly, and other tools used by the mes C compiler in the next stage.
 
 ## Mes
 
 This stage builds https://www.gnu.org/software/mes/ using the tools in stage0.
 This stage contains a scheme interpreter and also a more sophisticated C compiler implemented in scheme.
-
 
 ## Tiny C compiler
 
@@ -78,7 +77,8 @@ The stage then uses this compiler to build a lightly patched version musl-libc d
 
 cproc can then build itself linking against the libc it just built.
 
-It is important to note that cproc is capable of building a gcc 4.7 and binutils.
+It is important to note that cproc is capable of building a gcc 4.7 and binutils which
+may appear in future stages.
 
 
 ## Links
