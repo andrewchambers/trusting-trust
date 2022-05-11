@@ -8,8 +8,7 @@ case "$1" in
 	;;
 
 	all.done)
-		redo-ifchange ./sources.list
-		redo-ifchange $(cat ./sources.list)
+		redo-ifchange ./stage0-posix/x86.answers
 		cd stage0-posix
 		env -i /bin/sh -eu ./kaem.x86
 		cd ..
@@ -18,15 +17,6 @@ case "$1" in
 			cp "./stage0-posix/$f" ./bin
 		done
 		sha256sum ./bin/* > "$3"
-	;;
-
-	sources.list)
-		for dir in ./ $(find stage0-posix -name .git | sed 's,.git$,,g')
-		do
-			cd $dir
-			git ls-tree --name-only -r HEAD . | awk -v dir="$dir" '{print dir $0}'
-			cd $OLDPWD
-		done | grep -v -e ' ' > "$3"
 	;;
 
 	*)

@@ -8,7 +8,6 @@ case "$1" in
 	;;
 
 	all.done)
-		mkdir -p ./bin ./lib
 		files="
 			./bin/mescc
 			./bin/mes
@@ -43,22 +42,16 @@ case "$1" in
 
 	mes-libc-sources.list)
 		(
-			cd mes
-			git ls-tree -r --name-only HEAD . \
-				| awk  '{print "mes/" $0}' \
-				| grep '\.[cS]$' \
-				| grep '^mes/lib' \
-				| grep -v \
-				  -e 'mes-mescc/' \
-				  -e 'tests/' \
-				  -e 'lib/freebsd/' \
-				  -e 'lib/hurd/' \
-				  -e 'lib/mach/' \
-				  -e 'lib/gnu/' \
-				  -e 'lib/m2/time.c$' \
-				  -e '/arm\-' \
-				  -e '\-gcc'
-		) > "$3"
+			cd mes/build-aux
+			mes_kernel=linux
+			mes_cpu=x86
+			mes_libc=mes
+			compiler=mescc
+			set +x
+			touch config.sh # needed by configure-lib.
+			. ./configure-lib.sh
+			echo "$libc_tcc_SOURCES"
+		) | sed 's,^\(.\),mes/\1,g' > "$3"
 	;;
 
 	nyacc-sources.list)
@@ -94,6 +87,7 @@ case "$1" in
 			-e "s,@libdir@,$PWD/mes/lib,g" \
 			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
 			-e "s,@mes_cpu@,x86,g" \
+			-e "s,@mes_kernel@,linux,g" \
 			> "$3"
 	;;
 
@@ -133,29 +127,25 @@ case "$1" in
 		cp mes/lib/linux/x86-mes-mescc/crt1.o "$3"
 	;;
 
-	mes/lib/x86-mes/libmescc.S)
+	mes/lib/x86-mes/libmescc.s)
 		asmfiles="
-			./mes/lib/linux/x86-mes-mescc/syscall-internal.S
-			./mes/lib/linux/x86-mes-mescc/_exit.S
-			./mes/lib/linux/x86-mes-mescc/_write.S
-			./mes/lib/linux/x86-mes-mescc/syscall.S
-			./mes/lib/x86-mes-mescc/setjmp.S
+			./mes/lib/linux/x86-mes-mescc/syscall-internal.s
+			./mes/lib/linux/x86-mes-mescc/syscall.s
+			./mes/lib/x86-mes-mescc/setjmp.s
 		"
 		redo-ifchange $asmfiles
 		cat $asmfiles > "$3"
 	;;
 
-	mes/lib/x86-mes/libc.S)
+	mes/lib/x86-mes/libc.s)
 		redo-ifchange mes-libc-sources.list
-		asmfiles=$(cat mes-libc-sources.list | sed 's/\.c$/.S/g')
-		objfiles=$(cat mes-libc-sources.list | sed 's/\.[cS]$/.o/g')
+		asmfiles=$(cat mes-libc-sources.list | sed 's/\.c$/.s/g')
 		redo-ifchange $asmfiles
-		redo-ifchange $objfiles
 		cat $asmfiles > "$3"
 	;;
 
-	*.S)
-		cfile="${1%.S}.c"
+	*.s)
+		cfile="${1%.s}.c"
 		redo-ifchange mes-includes.list
 		redo-ifchange \
 			../mescc/bin/mescc \
@@ -171,7 +161,7 @@ case "$1" in
 	;;
 
 	*.o)
-		sfile="${1%.o}.S"
+		sfile="${1%.o}.s"
 		redo-ifchange \
 			../mescc/bin/mescc \
 			"$sfile"
