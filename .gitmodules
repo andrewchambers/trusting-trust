@@ -10,3 +10,6 @@
 [submodule "tcc/tcc"]
 	path = tcc/tcc
 	url = https://repo.or.cz/tinycc.git
+[submodule "tcc/tcc-0.9.26"]
+	path = tcc/tcc-0.9.26
+	url = https://gitlab.com/janneke/tinycc
