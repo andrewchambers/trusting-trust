@@ -35,10 +35,14 @@ case "$1" in
 	;;
 
 	libc-sources.list)
-		# simply include crt1.c, its simpler.
-		echo ../mescc/mes/lib/linux/x86-mes-gcc/crt1.c > "$3"
-		echo ./tcc-0.9.26/lib/libtcc1.c >> "$3"
+		# Note: simply include crt1.c, its simpler.
+		# Note: strerror.c seems to be missing from the list.
 		(
+			echo "
+				./tcc-0.9.26/lib/libtcc1.c
+				../mescc/mes/lib/linux/x86-mes-gcc/crt1.c
+				../mescc/mes/lib/string/strerror.c
+			"
 			cd ../mescc/mes/build-aux
 			mes_kernel=linux
 			mes_cpu=x86
@@ -48,7 +52,7 @@ case "$1" in
 			touch config.sh # needed by configure-lib.
 			. ./configure-lib.sh
 			echo "$libc_tcc_SOURCES"
-		) | sed 's,^\(.\),../mescc/mes/\1,g' >> "$3"
+		) | sort | sed 's,^\(.\),../mescc/mes/\1,g' >> "$3"
 	;;
 
 	tcc*/config.h)
