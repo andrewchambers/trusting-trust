@@ -60,12 +60,13 @@ This stage contains a scheme interpreter and also a more sophisticated C compile
 
 ## Tiny C compiler
 
-This stage builds a lightly patched version of https://bellard.org/tcc/ using the mes
+This stage builds a lightly patched version of https://bellard.org/tcc/ version 0.9.26 using the mes
 c compiler and libc. It then uses this tcc to build a simple version of mes libc
-for its own use.
+for its own use. Finally we use that version of tcc to build the most recent tcc.
 
-Tiny C compiler is useful because it implements an assembler and linker that 
-is more compatible with 'proper' compiler tools.
+Note that tiny C compiler is useful because it implements an assembler and linker that 
+is more compatible with 'proper' compiler tools. As mescc improves, this stage can
+be simplified.
 
 ## cproc, qbe and diet-musl
 
