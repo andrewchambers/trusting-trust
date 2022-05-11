@@ -55,12 +55,12 @@ This stage contains a macro assembler, a small Cish compiler implemented in asse
 
 ## Mes
 
-This stage builds https://www.gnu.org/software/mes/ using the tools in stage0.
+This stage builds https://www.gnu.org/software/mes using the tools in stage0.
 This stage contains a scheme interpreter and also a more sophisticated C compiler implemented in scheme.
 
 ## Tiny C compiler
 
-This stage builds a lightly patched version of https://bellard.org/tcc/ version 0.9.26 using the mes
+This stage builds a lightly patched version of https://bellard.org/tcc version 0.9.26 using the mes
 c compiler and libc. It then uses this tcc to build a simple version of mes libc
 for its own use. Finally we use that version of tcc to build the most recent tcc.
 
