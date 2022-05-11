@@ -77,7 +77,7 @@ The stage then uses this compiler to build a lightly patched version musl-libc d
 
 cproc can then build itself linking against the libc it just built.
 
-It is important to note that cproc is capable of building a gcc 4.7 and binutils which
+It is important to note that cproc is capable of building a patched gcc 4.7 and binutils which
 may appear in future stages.
 
 
