@@ -35,8 +35,8 @@ case "$1" in
 	;;
 
 	libc-sources.list)
-		# Note: simply include crt1.c, its simpler.
-		# Note: strerror.c seems to be missing from the list.
+		# Note: simply include crt1.c, it's simpler.
+		# Note: strerror.c seems to be missing from the upstream list.
 		(
 			echo "
 				./tcc-0.9.26/lib/libtcc1.c
