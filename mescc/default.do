@@ -78,7 +78,7 @@ case "$1" in
 
 	bin/mescc.scm)
 		redo-ifchange ./mes/scripts/mescc.scm.in
-		sed ./mes/scripts/mescc.scm.in  \
+		sed \
 			-e "s,@BASH@,/bin/sh,g" \
 			-e "s,@prefix@,$PWD/mes,g" \
 			-e "s,@guile_site_dir@,$PWD/mes/module:$PWD/nyacc/module,g" \
@@ -88,7 +88,7 @@ case "$1" in
 			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
 			-e "s,@mes_cpu@,x86,g" \
 			-e "s,@mes_kernel@,linux,g" \
-			> "$3"
+			./mes/scripts/mescc.scm.in > "$3"
 	;;
 
 	bin/mescc)
@@ -102,7 +102,7 @@ case "$1" in
 			./nyacc-sources.list
 		# include the hash.
 
-		sed ./mes/scripts/mescc.in  \
+		sed \
 			-e "s,@BASH@,/bin/sh,g" \
 			-e "s,@prefix@,$PWD/mes,g" \
 			-e "s,@guile_site_dir@,$PWD/mes/module:$PWD/nyacc/module,g" \
@@ -110,7 +110,7 @@ case "$1" in
 			-e "s,@includedir@,$PWD/mes/include,g" \
 			-e "s,@libdir@,$PWD/mes/lib,g" \
 			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
-			> "$3"
+			./mes/scripts/mescc.in > "$3"
 		# include something so redo stamps change.
 		echo "# generated at $(date)" >> "$3"
 		chmod +x "$3"
