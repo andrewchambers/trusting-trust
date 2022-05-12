@@ -62,14 +62,11 @@ This stage contains a scheme interpreter and also a more sophisticated C compile
 
 This stage builds a lightly patched version of https://bellard.org/tcc version 0.9.26 using the mes
 c compiler and libc. It then uses this tcc to build a simple version of mes libc
-for its own use. Finally we use that version of tcc to build the most recent tcc.
+for its own use.
 
-Note that tiny C compiler is useful because it implements an assembler and linker that 
-is more compatible with 'proper' compiler tools. As mescc improves, this stage can
-be simplified.
+tcc is able to produce elf files, and can be used as a preprocessor and assembler for cproc.
 
-## cproc, qbe and diet-musl
-
+## cproc
 To be done:
 
 This stage builds lightly patched https://sr.ht/~mcf/cproc/ and https://c9x.me/compile/.
