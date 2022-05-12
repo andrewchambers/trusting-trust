@@ -13,3 +13,6 @@
 [submodule "cproc/cproc"]
 	path = cproc/cproc
 	url = https://github.com/andrewchambers/cproc
+[submodule "tcc/tcc"]
+	path = tcc/tcc
+	url = https://repo.or.cz/tinycc.git

@@ -2,7 +2,7 @@ set -eu
 exec >&2
 case "$1" in
 	all)
-		redo-ifchange ./tcc/all.done
+		redo-ifchange cproc/all.done
 	;;
 
 	clean)
