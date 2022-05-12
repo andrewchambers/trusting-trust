@@ -9,7 +9,7 @@ case "$1" in
 
 	all.done)
 		redo-ifchange \
-			./bin/cproc-qbe-tcc \
+			./bin/cproc-qbe-meslibc
 		sha256sum ./bin/* > "$3"
 	;;
 
@@ -26,7 +26,7 @@ case "$1" in
 			> "$3"
 	;;
 
-	bin/cproc-qbe-tcc)
+	bin/cproc-qbe-meslibc)
 		redo-ifchange cproc-qbe-sources.list cproc-headers.list ../tcc/all.done
 		redo-ifchange $(cat cproc-qbe-sources.list cproc-headers.list)
 		../tcc/bin/tcc-0.9.26 \
