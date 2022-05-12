@@ -51,8 +51,8 @@ case "$1" in
 			set +x
 			touch config.sh # needed by configure-lib.
 			. ./configure-lib.sh
-			echo "$libc_tcc_SOURCES"
-		) | sort | sed 's,^\(.\),../mescc/mes/\1,g' >> "$3"
+			echo "$libc_tcc_SOURCES" | sed 's,^\(.\),../mescc/mes/\1,g'
+		) | awk '{if (NF) {$1=$1;print}}' | sort >> "$3"
 	;;
 
 	tcc*/config.h)
