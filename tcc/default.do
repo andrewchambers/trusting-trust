@@ -10,20 +10,21 @@ case "$1" in
 	all.done)
 		redo-ifchange \
 			./include.done \
-			./lib/libc.a \
-			./lib/crt1.o \
-			./lib/libtcc1.o
+			./lib/libc-4.a \
+			./lib/crt1-4.o \
+			./lib/libtcc1-4.o \
+			./bin/tcc-4
 		sha256sum $(find ./include ./bin ./lib -type f) > "$3"
 	;;
 
 	include.done)
 		redo-ifchange ../mescc/mes-headers.list
+		redo-ifchange $(printf "../mescc/%s\n" $(cat ../mescc/mes-headers.list))
 		for hdr in $(cat ../mescc/mes-headers.list | sed 's,^mes/,,g')
 		do
 			mkdir -p "$(dirname "$hdr")"
 			cp "../mescc/mes/$hdr" "$hdr"
 		done
-		cp ./tcc/include/tccdefs.h ./include
 		sha256sum $(find include -type f) > "$3"
 	;;
 
@@ -46,10 +47,11 @@ case "$1" in
 	;;
 
 	libc-sources.list)
-		# Note: simply include crt1.c, it's simpler.
 		# Note: strerror.c seems to be missing from the upstream list.
+		# Note: atof.c seems to be missing from the upstream list.
 		(
 			echo "../mescc/mes/lib/string/strerror.c"
+			echo "../mescc/mes/lib/stdlib/atof.c"
 			cd ../mescc/mes/build-aux
 			mes_kernel=linux
 			mes_cpu=x86
@@ -66,176 +68,90 @@ case "$1" in
 		touch "$3"
 	;;
 
-	bin/tcc-0.9.26-mescc)
+	bin/tcc-*)
+
 		redo-ifchange \
-			../mescc/all.done \
+			./include.done \
 			./tcc-0.9.26-sources.list \
 			./tcc-0.9.26/config.h
-
 		redo-ifchange $(cat tcc-0.9.26-sources.list)
 
-		export PATH="$PWD/../stage0/bin:$PATH"
-		../mescc/bin/mescc \
+		stage=${1#bin/tcc-}
+
+		if test "$stage" = 0
+		then
+			CC="../mescc/bin/mescc"
+			LIBS=""
+			redo-ifchange ../mescc/all.done
+			export PATH="$PWD/../stage0/bin:$PATH"
+		else
+			CC="./bin/tcc-$(($stage-1))"
+			LIBS="
+				lib/crt1-$(($stage-1)).o
+				lib/libtcc1-$(($stage-1)).o
+				lib/libc-$(($stage-1)).a
+			"
+			redo-ifchange $CC $LIBS
+		fi
+		case $stage in
+			0)
+				CFLAGS="
+					-D BOOTSTRAP=1
+					-D HAVE_SETJMP=1
+					-D inline=
+				"
+			;;
+			1)
+				CFLAGS="
+					-nostdlib -nostdinc
+					-D BOOTSTRAP=1
+					-D HAVE_SETJMP=1
+					-D HAVE_BITFIELD=1
+					-D HAVE_LONG_LONG_STUB=1
+				"
+			;;
+			2)
+				CFLAGS="
+					-nostdlib -nostdinc
+					-D BOOTSTRAP=1
+					-D HAVE_SETJMP=1
+					-D HAVE_BITFIELD=1
+					-D HAVE_LONG_LONG=1
+					-D HAVE_FLOAT_STUBS=1
+				"
+			;;
+			*)
+				CFLAGS="
+					-nostdlib -nostdinc
+					-D BOOTSTRAP=1
+					-D HAVE_SETJMP=1
+					-D HAVE_BITFIELD=1
+					-D HAVE_LONG_LONG=1
+					-D HAVE_FLOAT=1
+				"
+			;;
+		esac
+
+		$CC \
 			-v \
-			-I "../mescc/mes/include" \
-			-D BOOTSTRAP=1 \
+			-I ./include \
+			$CFLAGS \
 			-D TCC_TARGET_I386=1 \
-			-D inline= \
-			-D CONFIG_TCCDIR=\"/tcc\" \
-			-D CONFIG_SYSROOT=\"/\" \
-			-D CONFIG_TCC_CRTPREFIX=\"/\" \
-			-D CONFIG_TCC_ELFINTERP=\"/\" \
-			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
-			-D TCC_LIBGCC=\"\" \
-			-D CONFIG_TCC_LIBTCC1_MES=0 \
-			-D CONFIG_TCCBOOT=1 \
 			-D CONFIG_TCC_STATIC=1 \
-			-D CONFIG_USE_LIBGCC=1 \
-			-D TCC_MES_LIBC=1 \
-			-D TCC_VERSION=\"0.9.26\" \
-			-D ONE_SOURCE=1 \
-			-o "$3" \
-			./tcc-0.9.26/tcc.c
-	;;
-
-	lib/crt1-0.9.26.o)
-		cfile="../mescc/mes/lib/linux/x86-mes-gcc/crt1.c"
-		redo-ifchange ./bin/tcc-0.9.26-mescc "$cfile"
-		./bin/tcc-0.9.26-mescc \
-				-nostdinc \
-				-D TCC_TARGET_I386=1 \
-				-I ../mescc/mes/include \
-				-I ../mescc/mes/include/linux/x86 \
-				-c \
-				-o "$3" \
-				"$cfile"
-
-	;;
-
-	lib/libtcc1-0.9.26.o)
-		cfile="./tcc-0.9.26/lib/libtcc1.c"
-		redo-ifchange ./bin/tcc-0.9.26-mescc "$cfile"
-		./bin/tcc-0.9.26-mescc \
-				-nostdinc \
-				-D TCC_TARGET_I386=1 \
-				-c \
-				-o "$3" \
-				"$cfile"
-	;;
-
-	lib/libc-0.9.26.a)
-		redo-ifchange libc-sources.list
-		redo-ifchange ./bin/tcc-0.9.26-mescc $(cat libc-sources.list)
-		rm -rf ./libc-obj-0.9.26
-		mkdir ./libc-obj-0.9.26
-		for cfile in $(cat libc-sources.list)
-		do
-			ofile="./libc-obj-0.9.26/$(basename "$cfile" ".c").o"
-			./bin/tcc-0.9.26-mescc \
-				-nostdinc \
-				-D TCC_TARGET_I386=1 \
-				-I ../mescc/mes/include \
-				-I ../mescc/mes/include/linux/x86 \
-				-c \
-				-o "$ofile" \
-				"$cfile"
-		done
-		./bin/tcc-0.9.26-mescc -ar -crs "$3" libc-obj-0.9.26/*
-		rm -rf ./libc-obj-0.9.26
-	;;
-
-	bin/tcc-0.9.26)
-		redo-ifchange \
-			./tcc-0.9.26-sources.list \
-			./tcc-0.9.26/config.h \
-			./bin/tcc-0.9.26-mescc \
-			./lib/crt1-0.9.26.o \
-			./lib/libtcc1-0.9.26.o \
-			./lib/libc-0.9.26.a
-		redo-ifchange $(cat tcc-0.9.26-sources.list)
-
-		./bin/tcc-0.9.26-mescc \
-			-v \
-			-nostdinc \
-			-nostdlib \
-			-I "../mescc/mes/include" \
-			-D BOOTSTRAP=1 \
-			-D HAVE_FLOAT=1 \
-			-D HAVE_BITFIELD=1 \
-			-D HAVE_LONG_LONG=1 \
-			-D HAVE_SETJMP=1 \
-			-D TCC_TARGET_I386=1 \
-			-D inline= \
-			-D CONFIG_TCCDIR=\"/tcc\" \
-			-D CONFIG_SYSROOT=\"/\" \
-			-D CONFIG_TCC_CRTPREFIX=\"/\" \
-			-D CONFIG_TCC_ELFINTERP=\"/\" \
-			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
-			-D TCC_LIBGCC=\"\" \
-			-D CONFIG_TCC_LIBTCC1_MES=0 \
-			-D CONFIG_TCCBOOT=1 \
-			-D CONFIG_TCC_STATIC=1 \
-			-D CONFIG_USE_LIBGCC=1 \
-			-D TCC_MES_LIBC=1 \
 			-D TCC_VERSION=\"0.9.26\" \
 			-D ONE_SOURCE=1 \
 			-o "$3" \
 			./tcc-0.9.26/tcc.c \
-			./lib/crt1-0.9.26.o \
-			./lib/libtcc1-0.9.26.o \
-			./lib/libc-0.9.26.a
+			$LIBS
 	;;
 
-	bin/tcc)
-		redo-ifchange \
-			./tcc-sources.list \
-			./tcc/config.h \
-			./bin/tcc-0.9.26 \
-			./lib/crt1-0.9.26.o \
-			./lib/libtcc1-0.9.26.o \
-			./lib/libc-0.9.26.a
-		redo-ifchange $(cat tcc-sources.list)
-
-		./bin/tcc-0.9.26 \
-			-v \
-			-nostdinc \
-			-nostdlib \
-			-I "../mescc/mes/include" \
-			-D BOOTSTRAP=1 \
-			-D HAVE_FLOAT=1 \
-			-D HAVE_BITFIELD=1 \
-			-D HAVE_LONG_LONG=1 \
-			-D HAVE_SETJMP=1 \
-			-D TCC_TARGET_I386=1 \
-			-D inline= \
-			-D CONFIG_TCCDIR=\"/tcc\" \
-			-D CONFIG_SYSROOT=\"/\" \
-			-D CONFIG_TCC_CRTPREFIX=\"/\" \
-			-D CONFIG_TCC_ELFINTERP=\"/\" \
-			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
-			-D TCC_LIBGCC=\"\" \
-			-D CONFIG_TCC_LIBTCC1_MES=0 \
-			-D CONFIG_TCCBOOT=1 \
-			-D CONFIG_TCC_STATIC=1 \
-			-D CONFIG_USE_LIBGCC=1 \
-			-D CONFIG_TCC_SEMLOCK=0 \
-			-D TCC_MES_LIBC=1 \
-			-D TCC_VERSION=\"\" \
-			-D ONE_SOURCE=1 \
-			-o "$3" \
-			./tcc/tcc.c \
-			./lib/crt1-0.9.26.o \
-			./lib/libtcc1-0.9.26.o \
-			./lib/libc-0.9.26.a
-	;;
-
-
-	lib/crt1.o)
+	lib/crt1-*.o)
+		stage="${1#lib/crt1-}"
+		stage="${stage%.o}"
 		cfile="../mescc/mes/lib/linux/x86-mes-gcc/crt1.c"
-		redo-ifchange ./bin/tcc include.done "$cfile"
-		./bin/tcc \
+		redo-ifchange ./include.done ./bin/tcc-$stage "$cfile"
+		./bin/tcc-$stage \
 				-nostdinc \
-				-D TCC_TARGET_I386=1 \
 				-I ./include \
 				-c \
 				-o "$3" \
@@ -243,37 +159,40 @@ case "$1" in
 
 	;;
 
-	lib/libtcc1.o)
-		cfile="./tcc/lib/libtcc1.c"
-		redo-ifchange ./bin/tcc include.done "$cfile"
-		./bin/tcc \
+	lib/libtcc1-*.o)
+		stage="${1#lib/libtcc1-}"
+		stage="${stage%.o}"
+		cfile="./tcc-0.9.26/lib/libtcc1.c"
+		redo-ifchange ./include.done ./bin/tcc-$stage "$cfile"
+		./bin/tcc-$stage \
 				-nostdinc \
-				-D TCC_TARGET_I386=1 \
 				-I ./include \
+				-D TCC_TARGET_I386=1 \
 				-c \
 				-o "$3" \
 				"$cfile"
 	;;
 
-	lib/libc.a)
-		redo-ifchange libc-sources.list
-		redo-ifchange ./bin/tcc $(cat libc-sources.list)
-		rm -rf ./libc-obj
-		mkdir ./libc-obj
+	lib/libc-*.a)
+		stage="${1#lib/libc-}"
+		stage="${stage%.a}"
+		redo-ifchange ./libc-sources.list ./include.done ./bin/tcc-$stage
+		redo-ifchange $(cat libc-sources.list)
+		rm -rf ./libc-obj-$stage
+		mkdir ./libc-obj-$stage
 		for cfile in $(cat libc-sources.list)
 		do
-			ofile="./libc-obj/$(basename "$cfile" ".c").o"
-			./bin/tcc \
+			ofile="./libc-obj-$stage/$(basename "$cfile" ".c").o"
+			./bin/tcc-$stage \
 				-nostdinc \
-				-D TCC_TARGET_I386=1 \
 				-I ./include \
 				-I ./include/linux/x86 \
 				-c \
 				-o "$ofile" \
 				"$cfile"
 		done
-		./bin/tcc -ar -crs "$3" libc-obj/*
-		rm -rf ./libc-obj
+		./bin/tcc-$stage -ar -crs "$3" libc-obj-$stage/*
+		rm -rf ./libc-obj-$stage
 	;;
 
 	*)
