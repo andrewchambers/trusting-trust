@@ -31,7 +31,7 @@ case "$1" in
 		) > "$3"
 	;;
 
-	mes-includes.list)
+	mes-headers.list)
 		(
 			cd mes
 			git ls-tree -r --name-only HEAD . \
@@ -146,10 +146,10 @@ case "$1" in
 
 	*.s)
 		cfile="${1%.s}.c"
-		redo-ifchange mes-includes.list
+		redo-ifchange mes-headers.list
 		redo-ifchange \
 			../mescc/bin/mescc \
-			$(cat mes-includes.list) \
+			$(cat mes-headers.list) \
 			"$cfile"
 		
 		env -i PATH="$PWD/../stage0/bin:$PATH" \

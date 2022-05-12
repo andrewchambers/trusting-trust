@@ -7,9 +7,9 @@
 [submodule "mescc/mes"]
 	path = mescc/mes
 	url = git://git.savannah.gnu.org/mes.git
-[submodule "tcc/tcc"]
-	path = tcc/tcc
-	url = https://repo.or.cz/tinycc.git
 [submodule "tcc/tcc-0.9.26"]
 	path = tcc/tcc-0.9.26
 	url = https://gitlab.com/janneke/tinycc
+[submodule "cproc/cproc"]
+	path = cproc/cproc
+	url = https://github.com/andrewchambers/cproc

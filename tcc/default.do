@@ -9,28 +9,29 @@ case "$1" in
 
 	all.done)
 		redo-ifchange \
+			./include.done \
 			./bin/tcc-0.9.26-mescc \
 			./bin/tcc-0.9.26 \
-			./bin/tcc \
 			./lib/libc.a
-		sha256sum ./bin/* ./lib/* > "$3"
+		sha256sum $(find ./include ./bin ./lib -type f) > "$3"
 	;;
-	
+
+	include.done)
+		redo-ifchange ../mescc/mes-headers.list
+		for hdr in $(cat ../mescc/mes-headers.list | sed 's,^mes/,,g')
+		do
+			mkdir -p "$(dirname "$hdr")"
+			cp "../mescc/mes/$hdr" "$hdr"
+		done
+		sha256sum $(find include -type f) > "$3"
+	;;
+
 	tcc-0.9.26-sources.list)
 		(
 			cd tcc-0.9.26
 			git ls-tree -r --name-only HEAD . \
 				| grep -v -e tests/ -e win32 \
 				| awk  '{print "tcc-0.9.26/" $0}'
-		) > "$3"
-	;;
-
-	tcc-sources.list)
-		(
-			cd tcc
-			git ls-tree -r --name-only HEAD . \
-				| grep -v -e tests/ -e win32 \
-				| awk  '{print "tcc/" $0}'
 		) > "$3"
 	;;
 
@@ -99,7 +100,6 @@ case "$1" in
 		for cfile in $(cat libc-sources.list)
 		do
 			ofile="./libc-obj/$(basename "$cfile" ".c").o"
-			file $ofile
 			./bin/tcc-0.9.26-mescc \
 				-nostdinc \
 				-D TCC_TARGET_I386=1 \
@@ -109,7 +109,7 @@ case "$1" in
 				-o "$ofile" \
 				"$cfile"
 		done
-		./bin/tcc-0.9.26-mescc -ar -cr "$3" libc-obj/*
+		./bin/tcc-0.9.26-mescc -ar -crs "$3" libc-obj/*
 		rm -rf ./libc-obj
 	;;
 
@@ -150,47 +150,6 @@ case "$1" in
 			./tcc-0.9.26/tcc.c \
 			./lib/libc.a
 	;;
-
-	bin/tcc)
-		redo-ifchange \
-			./tcc-sources.list \
-			./tcc/config.h \
-			./bin/tcc-0.9.26 \
-			./lib/libc.a
-		redo-ifchange $(cat tcc-sources.list)
-
-		./bin/tcc-0.9.26 \
-			-v \
-			-nostdinc \
-			-nostdlib \
-			-I "../mescc/mes/include" \
-			-D BOOTSTRAP=1 \
-			-D HAVE_FLOAT=1 \
-			-D HAVE_BITFIELD=1 \
-			-D HAVE_LONG_LONG=1 \
-			-D HAVE_SETJMP=1 \
-			-D TCC_TARGET_I386=1 \
-			-D inline= \
-			-D CONFIG_TCCDIR=\"/tcc\" \
-			-D CONFIG_SYSROOT=\"/\" \
-			-D CONFIG_TCC_CRTPREFIX=\"/\" \
-			-D CONFIG_TCC_ELFINTERP=\"/\" \
-			-D CONFIG_TCC_SYSINCLUDEPATHS=\"/include\" \
-			-D TCC_LIBGCC=\"\" \
-			-D CONFIG_TCC_LIBTCC1_MES=0 \
-			-D CONFIG_TCCBOOT=1 \
-			-D CONFIG_TCC_STATIC=1 \
-			-D CONFIG_USE_LIBGCC=1 \
-			-D CONFIG_TCC_SEMLOCK=0 \
-			-D TCC_MES_LIBC=1 \
-			-D TCC_VERSION=\"\" \
-			-D ONE_SOURCE=1 \
-			-o "$3" \
-			./tcc/tcc.c \
-			./lib/libc.a
-	;;
-
-
 
 	*)
 		echo "don't know how to build $1"
