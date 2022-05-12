@@ -1,5 +1,11 @@
 
 int
+getopt(int argc, char *const argv[], const char *optstring)
+{
+	return -1;
+}
+
+int
 isalpha(int c)
 {
 	return ((unsigned)c|32)-'a' < 26;
@@ -29,8 +35,7 @@ abort()
 
 int
 fscanf(void *stream, const char *format, ...) {
-	// abort();
-	return -1;
+	abort();
 }
 
 int freopen(const char * pathname, const char * mode,

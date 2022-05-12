@@ -15,14 +15,19 @@ case "$1" in
 	;;
 
 	qbe-headers.list)
-		find ./cproc/qbe -name '*.h' > "$3"
+		(
+			echo ./cproc/qbe/config.h
+			find ./cproc/qbe -name '*.h'
+		) | sort -u > "$3"
 	;;
 
 	qbe-meslibc-sources.list)
-		find ./cproc/qbe -name '*.c' \
-			| grep -v 'tools/' \
-			| sort \
-			> "$3"
+		(
+			echo ./meslibc-extra.c
+			find ./cproc/qbe -name '*.c' \
+				| grep -v -e 'tools/' -e 'test/' -e 'minic/'
+			
+		) | sort -u > "$3"
 	;;
 
 	cproc-headers.list)
@@ -41,7 +46,7 @@ case "$1" in
 	bin/cproc-qbe-meslibc)
 		redo-ifchange cproc-qbe-meslibc-sources.list cproc-headers.list ../tcc/all.done
 		redo-ifchange $(cat cproc-qbe-meslibc-sources.list cproc-headers.list)
-		../tcc/bin/tcc-0.9.26 \
+		../tcc/bin/tcc-4 \
 			-nostdinc -nostdlib \
 			-I../tcc/include \
 			-D_Bool=int \
@@ -51,26 +56,31 @@ case "$1" in
 			-DPRIuLEAST32=\"d\" \
 			-o "$3" \
 			$(cat cproc-qbe-meslibc-sources.list) \
-			../tcc/lib/crt1.o \
-			../tcc/lib/libtcc1.o \
-			../tcc/lib/libc.a
+			../tcc/lib/crt1-4.o \
+			../tcc/lib/libtcc1-4.o \
+			../tcc/lib/libc-4.a
+	;;
+
+	cproc/qbe/config.h)
+		echo "#define Defasm Gaself" > "$3"
+		echo "#define Deftgt T_amd64_sysv" >> "$3"
 	;;
 
 	bin/qbe-meslibc)
 		redo-ifchange qbe-meslibc-sources.list qbe-headers.list ../tcc/all.done
 		redo-ifchange $(cat qbe-meslibc-sources.list qbe-headers.list)
-		../tcc/bin/tcc-0.9.26 \
+		../tcc/bin/tcc-4 \
 			-nostdinc -nostdlib \
 			-I../tcc/include \
 			-DPRId64=\"ld\" \
 			-DPRIi64=\"ld\" \
 			-DPRIu64=\"lu\" \
+			-DPRId32=\"d\" \
 			-o "$3" \
 			$(cat qbe-meslibc-sources.list) \
-			../tcc/lib/libc.a \
-			../tcc/lib/crt1.o \
-			../tcc/lib/libtcc1.o \
-			../tcc/lib/libc.a
+			../tcc/lib/crt1-4.o \
+			../tcc/lib/libtcc1-4.o \
+			../tcc/lib/libc-4.a
 	;;
 
 	*)
