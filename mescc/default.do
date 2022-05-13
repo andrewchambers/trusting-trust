@@ -9,6 +9,7 @@ case "$1" in
 
 	all.done)
 		files="
+			./bin/mescc.scm
 			./bin/mescc
 			./bin/mes
 			./mes/lib/x86-mes/crt1.o
@@ -23,11 +24,11 @@ case "$1" in
 		(
 			cd mes
 			git ls-tree -r --name-only HEAD . \
-				| awk  '{print "mes/" $0}' \
+				| awk  '{print "./mes/" $0}' \
 				| grep -v \
-					-e '^mes/test' \
-					-e '^mes/lib' \
-					-e '^mes/include'
+					-e '^./mes/test' \
+					-e '^./mes/lib' \
+					-e '^./mes/include'
 		) > "$3"
 	;;
 
@@ -35,8 +36,8 @@ case "$1" in
 		(
 			cd mes
 			git ls-tree -r --name-only HEAD . \
-				| awk  '{print "mes/" $0}' \
-				| grep -e '^mes/include'
+				| grep -e '^include/' \
+				| awk  '{print "./mes/" $0}'
 		) > "$3"
 	;;
 
@@ -50,22 +51,21 @@ case "$1" in
 			set +x
 			touch config.sh # needed by configure-lib.
 			. ./configure-lib.sh
-			echo "$libc_tcc_SOURCES"
-		) | sed 's,^\(.\),mes/\1,g' > "$3"
+			printf "%s\n" $libc_tcc_SOURCES | sort
+		) | sed 's,^\(.\),./mes/\1,g' > "$3"
 	;;
 
 	nyacc-sources.list)
 		(
 			cd nyacc
 			git ls-tree -r --name-only HEAD . \
-				| awk  '{print "nyacc/" $0}'
+				| awk  '{print "./nyacc/" $0}'
 		) > "$3"
 	;;
 
 	bin/mes)
-		redo-ifchange ./mes-sources.list
+		redo-ifchange ./mes-sources.list ../stage0/all.done
 		redo-ifchange $(cat ./mes-sources.list)
-		redo-ifchange ../stage0/all.done
 		cd mes
 		env -i \
 			PATH="$PWD/../../stage0/bin" \
@@ -92,16 +92,8 @@ case "$1" in
 	;;
 
 	bin/mescc)
-		# Technically we aren't building mescc, but it's useful
-		# to be able to depend on bin/mescc and its sources.
-		redo-ifchange \
-			../stage0/all.done \
-			./bin/mes \
-			./bin/mescc.scm \
-			./mes/scripts/mescc.in \
-			./nyacc-sources.list
-		# include the hash.
-
+		redo-ifchange mes-sources.list nyacc-sources.list  ../stage0/all.done
+		redo-ifchange $(cat mes-sources.list nyacc-sources.list)
 		sed \
 			-e "s,@BASH@,/bin/sh,g" \
 			-e "s,@prefix@,$PWD/mes,g" \
@@ -111,9 +103,9 @@ case "$1" in
 			-e "s,@libdir@,$PWD/mes/lib,g" \
 			-e "s,@guile_site_ccache_dir@,/tmp/,g" \
 			./mes/scripts/mescc.in > "$3"
-		# include something so redo stamps change.
-		echo "# generated at $(date)" >> "$3"
 		chmod +x "$3"
+		# Include a timestamp to alter hash when sources change.
+		echo "# generated on $(date)" >> "$3"
 	;;
 
 	*.a)
@@ -146,15 +138,11 @@ case "$1" in
 
 	*.s)
 		cfile="${1%.s}.c"
-		redo-ifchange mes-headers.list
-		redo-ifchange \
-			../mescc/bin/mescc \
-			$(cat mes-headers.list) \
-			"$cfile"
-		
+		redo-ifchange ./bin/mescc mes-headers.list "$cfile"
+		redo-ifchange $(cat mes-headers.list)
 		env -i PATH="$PWD/../stage0/bin:$PATH" \
-			../mescc/bin/mescc \
-			-I "../mescc/mes/lib/include" \
+			./bin/mescc \
+			-I "./mes/lib/include" \
 			-S \
 			-o "$3" \
 			"$cfile"
@@ -163,10 +151,10 @@ case "$1" in
 	*.o)
 		sfile="${1%.o}.s"
 		redo-ifchange \
-			../mescc/bin/mescc \
+			./bin/mescc \
 			"$sfile"
 		env -i PATH="$PWD/../stage0/bin:$PATH" \
-			../mescc/bin/mescc \
+			./bin/mescc \
 			-c \
 			-o "$3" \
 			"$sfile"

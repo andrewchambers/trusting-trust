@@ -9,4 +9,8 @@ case "$1" in
 		git clean -fxd
 		git submodule foreach git clean -fxd
 	;;
+
+	*)
+		echo "don't know how to build $1"
+	;;
 esac
